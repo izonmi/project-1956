@@ -142,7 +142,7 @@ The Result: A rapidly deployed, react-based website built in a few hours. Provin
                     lockedArchiveContent: {
                         imageUrl: "https://images.unsplash.com/photo-1516192518150-0d8fee5425e3?q=80&w=1000&auto=format&fit=crop", 
                         channelUrl: "https://www.youtube.com/@untitled.project1956",
-                        text: "The Instagram feed (@project.1956) is the public facade—the curated output of the machine. This YouTube archive is the raw data.<br><br><span class='font-mono bg-black text-white px-1'>Status: LOCKED.</span><br><span class='font-mono'>Unlock Condition: Phase 1 Completion.</span><br><br>Once the initial traction phase is complete, the encryption will lift. I will begin publishing the unedited, raw vlogs documenting the 'Manual Override' process—revealing the exact workflows, failures, and pivots behind the project."
+                        text: "The Instagram feed (<a href='https://www.instagram.com/project.1956/' target='_blank' class='underline hover:text-black transition-colors'>@project.1956</a>) is the public facade—the curated output of the machine. This YouTube archive is the raw data.<br><br><span class='font-mono bg-black text-white px-1'>Status: LOCKED.</span><br><span class='font-mono'>Unlock Condition: Phase 1 Completion.</span><br><br>Once the initial traction phase is complete, the encryption will lift. I will begin publishing the unedited, raw vlogs documenting the 'Manual Override' process—revealing the exact workflows, failures, and pivots behind the project."
                     }
                 },
                 {
@@ -227,7 +227,7 @@ The Result: A rapidly deployed, react-based website built in a few hours. Provin
                     contentHtml = `
                     <div class="w-full bg-black border-2 border-green-500 rounded-lg p-6 md:p-8 font-mono text-green-500 shadow-xl relative overflow-hidden mb-8 min-h-[400px]">
                         <div class="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-10 pointer-events-none bg-[length:100%_4px,3px_100%]"></div>
-                        <div class="relative z-20 whitespace-pre-wrap leading-relaxed text-sm md:text-base lg:text-lg">
+                        <div id="terminal-text" class="relative z-20 whitespace-pre-wrap leading-relaxed text-sm md:text-base lg:text-lg">
 ${brand.terminalContent.replace('Objective:', '<span class="text-white font-bold">Objective:</span>')
                        .replace('Execution:', '<span class="text-white font-bold">Execution:</span>')
                        .replace('The Result:', '<span class="text-white font-bold">The Result:</span>')
@@ -342,11 +342,76 @@ ${brand.terminalContent.replace('Objective:', '<span class="text-white font-bold
             if (slide.type === 'contact') {
                 loadTallyEmbeds();
             }
+            
+            // Check for terminal scramble
+            if (slide.type === 'brand' && slide.data.terminalContent) {
+                runTerminalScramble();
+            }
 
             updateNav();
             updateHeaderCountdown();
             lucide.createIcons(); // Refresh icons
             window.scrollTo(0,0);
+        }
+
+        function runTerminalScramble() {
+            const element = document.getElementById('terminal-text');
+            if (!element) return;
+
+            const getTextNodes = (node) => {
+                let textNodes = [];
+                if (node.nodeType === 3) {
+                    if (node.nodeValue.trim().length > 0 || node.nodeValue.includes('\n')) {
+                        textNodes.push(node);
+                    }
+                } else {
+                    node.childNodes.forEach(child => {
+                        textNodes = textNodes.concat(getTextNodes(child));
+                    });
+                }
+                return textNodes;
+            };
+
+            const textNodes = getTextNodes(element);
+            const originalTexts = textNodes.map(n => n.nodeValue);
+            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()_+-=[]{}|;:,.<>?/";
+
+            let startTime = null;
+            const duration = 500; 
+
+            const animate = (timestamp) => {
+                if (!startTime) startTime = timestamp;
+                const progress = Math.min((timestamp - startTime) / duration, 1);
+
+                textNodes.forEach((node, index) => {
+                    const original = originalTexts[index];
+                    let newText = "";
+                    for (let i = 0; i < original.length; i++) {
+                        const char = original[i];
+                        if (char === '\n' || char === ' ') {
+                            newText += char;
+                            continue;
+                        }
+                        
+                        if (i / original.length < progress) {
+                            newText += char;
+                        } else {
+                            newText += chars[Math.floor(Math.random() * chars.length)];
+                        }
+                    }
+                    node.nodeValue = newText;
+                });
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    textNodes.forEach((node, index) => {
+                        node.nodeValue = originalTexts[index];
+                    });
+                }
+            };
+
+            requestAnimationFrame(animate);
         }
 
         function loadTallyEmbeds() {
