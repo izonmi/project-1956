@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project 1956</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700;900&display=swap');
+        
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+        
+        /* Custom Scrollbar hide */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Fade transition */
+        .slide-container {
+            transition: opacity 0.5s ease-in-out;
+            opacity: 1;
+        }
+
+        /* Menu Overlay Transition */
+        #menu-overlay {
+            transition: opacity 0.3s ease-in-out, visibility 0.3s;
+        }
+        .menu-hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .menu-visible {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+    </style>
+</head>
+<body class="min-h-screen w-full bg-white text-black relative font-sans flex flex-col overflow-x-hidden">
+
+    <main id="main-content" class="flex-grow w-full">
+        </main>
+
+    <div class="w-full p-8 md:fixed md:bottom-0 md:left-0 md:p-12 flex justify-between items-end z-50 bg-white md:bg-transparent mt-auto pointer-events-none">
+        <div id="slide-counter" class="text-xs font-bold tracking-widest opacity-30 text-black">
+            01 / 06
+        </div>
+        
+        <div class="flex gap-4 pointer-events-auto">
+            <button id="prev-btn" onclick="changeSlide(-1)" class="p-4 rounded-full transition-all duration-300 hover:bg-gray-100 opacity-100 text-black">
+                <i data-lucide="arrow-left" class="w-6 h-6"></i>
+            </button>
+            <button id="next-btn" onclick="changeSlide(1)" class="group flex items-center gap-3 pr-6 pl-2 py-2 rounded-full transition-all duration-300 bg-black text-white hover:bg-gray-800 opacity-100">
+                <div class="bg-white text-black rounded-full p-2 group-hover:scale-110 transition-transform">
+                    <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                </div>
+                <span class="font-bold tracking-widest text-sm pr-2">NEXT</span>
+            </button>
+        </div>
+    </div>
+
+    <button onclick="goToStart()" class="fixed top-4 left-4 md:top-8 md:left-12 z-50 hover:scale-110 transition-transform cursor-pointer" aria-label="Go to start">
+        <div class="w-6 h-6 md:w-8 md:h-8 bg-black rounded-full shadow-lg"></div>
+    </button>
+
+    <button onclick="toggleMenu(true)" class="fixed top-4 right-4 md:top-8 md:right-12 z-50 bg-black w-8 h-8 md:w-10 md:h-10 flex items-center justify-center cursor-pointer hover:scale-105 transition-transform" aria-label="Open Menu">
+        <i data-lucide="menu" class="text-white w-5 h-5"></i>
+    </button>
+
+    <div id="header-countdown" class="fixed top-14 right-4 md:top-20 md:right-12 z-40 font-bold tracking-widest text-[10px] md:text-xs hidden md:block text-black">
+        </div>
+
+    <div id="menu-overlay" class="fixed inset-0 bg-black z-[100] flex flex-col items-center justify-center menu-hidden">
+        <button onclick="toggleMenu(false)" class="absolute top-4 right-4 md:top-8 md:right-12 text-white hover:scale-110 transition-transform" aria-label="Close Menu">
+            <i data-lucide="x" class="w-8 h-8"></i>
+        </button>
+        <nav class="flex flex-col gap-6 text-center">
+            <button onclick="jumpToSlideName('about')" class="text-2xl md:text-4xl font-black text-white hover:text-gray-400 transition-colors tracking-tighter">My Story</button>
+            <button onclick="jumpToBrand('PROTOCOL 01:')" class="text-2xl md:text-4xl font-black text-white hover:text-gray-400 transition-colors tracking-tighter">Protocol 01</button>
+            <button onclick="jumpToBrand('PROTOCOL 02')" class="text-2xl md:text-4xl font-black text-white hover:text-gray-400 transition-colors tracking-tighter">Protocol 02</button>
+            <button onclick="jumpToBrand('PROTOCOL 03')" class="text-2xl md:text-4xl font-black text-white hover:text-gray-400 transition-colors tracking-tighter">Protocol 03</button>
+            <button onclick="jumpToSlideName('contact')" class="text-2xl md:text-4xl font-black text-white hover:text-gray-400 transition-colors tracking-tighter">Get In Touch</button>
+        </nav>
+    </div>
+
+    <script>
+        // --- COUNTDOWN LOGIC ---
+        function updateHeaderCountdown() {
+            const startDate = new Date('2026-01-18T00:00:00'); // Start Day 1
+            const now = new Date();
+            const diffTime = Math.abs(now - startDate);
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); 
+            
+            const startValue = 1956;
+            const currentValue = startValue - diffDays;
+            
+            const el = document.getElementById('header-countdown');
+            if(el) {
+                el.innerText = currentValue;
+            }
+        }
+
+        // --- DATA ---
+        const PORTFOLIO_DATA = {
+            owner: "CREATIVE STRATEGIST",
+            about: {
+                title: "THE MANIFESTO",
+                text: "Project 1956 is a living case where I'm documenting the collision of human creativity and artificial intelligence. Born from pure curiosity, this archive documents the friction of adoption. My goal is to master the machine in public by building workflows, testing limits, and defining the role of the operator aka me. We're not just counting down, we're living it."
+            },
+            brands: [
+                {
+                    name: "PROTOCOL 01:",
+                    description: "THIS WEBSITE (VIBE CODED)",
+                    projectType: "AI-Assisted Development",
+                    terminalContent: `// SYSTEM LOG: PROTOCOL 01
+// METHODOLOGY: VIBE CODING
+
+Objective: Deploy a reactive web environment without touching traditional documentation.
+
+Execution:
+Input: This interface was not written line-by-line; it was spoken. By leveraging Gemini, I bypassed the syntax layer to design directly what was in my mind.
+
+0% Manual CSS: Every pixel was placed via natural language prompting.
+
+100% Intent: My role shifted from "Builder" to "Architect," correcting the AI's hallucinations until the vision matched reality.
+
+The Result: A rapidly deployed, react-based website built in a few hours. Proving the barrier between "Idea" and "Product" is getting close to zero.`
+                },
+                {
+                    name: "PROTOCOL 02",
+                    description: "THE COUNTDOWN",
+                    projectType: "Documentary Archive",
+                    lockedArchiveContent: {
+                        imageUrl: "https://images.unsplash.com/photo-1516192518150-0d8fee5425e3?q=80&w=1000&auto=format&fit=crop", 
+                        channelUrl: "https://www.youtube.com/@untitled.project1956",
+                        text: "The Instagram feed (@project.1956) is the public facade—the curated output of the machine. This YouTube archive is the raw data.<br><br><span class='font-mono bg-black text-white px-1'>Status: LOCKED.</span><br><span class='font-mono'>Unlock Condition: Phase 1 Completion.</span><br><br>Once the initial traction phase is complete, the encryption will lift. I will begin publishing the unedited, raw vlogs documenting the 'Manual Override' process—revealing the exact workflows, failures, and pivots behind the project."
+                    }
+                },
+                {
+                    name: "PROTOCOL 03",
+                    description: "[REDACTED]",
+                    projectType: "In Development",
+                    futureRoadmapContent: {
+                        text: "The archive is expanding. New protocols are currently being stress-tested in the lab.<br><br>Future updates will include:<br><br><span class='font-bold'>Open Source Codebases:</span> Downloadable repositories for the tools built here.<br><span class='font-bold'>Use-Case Declassifications:</span> Step-by-step breakdowns of failed and successful experiments.<br><span class='font-bold'>Blueprint Library:</span> Frameworks for you to launch your own manual override.<br><br><span class='font-mono bg-black text-white px-1'>Status: AWAITING DEPLOYMENT.</span>"
+                    }
+                }
+            ]
+        };
+
+        // --- PREPARE SLIDES ARRAY ---
+        const SLIDES = [
+            { type: 'title' },
+            { type: 'about' },
+            ...PORTFOLIO_DATA.brands.map(brand => ({ type: 'brand', data: brand })),
+            { type: 'contact' }
+        ];
+
+        let currentSlide = 0;
+        const totalSlides = SLIDES.length;
+
+        // --- RENDER LOGIC ---
+        function renderSlide(index) {
+            const container = document.getElementById('main-content');
+            const slide = SLIDES[index];
+            let html = '';
+
+            if (slide.type === 'title') {
+                html = `
+                <div class="min-h-[80vh] md:h-full w-full flex flex-col justify-center items-start px-6 md:px-24 max-w-7xl mx-auto py-12 md:py-0 slide-container">
+                    <div class="overflow-hidden mb-4"><p class="text-sm md:text-base font-bold tracking-[0.2em] text-gray-400 uppercase animate-pulse">FOLLOW THE WHITE RABBIT</p></div>
+                    <h1 class="text-5xl md:text-7xl lg:text-9xl font-black tracking-tighter leading-[0.9] mb-4 text-black">PROJECT<br/>1956</h1>
+                    <p class="text-base md:text-lg font-bold text-gray-500 mb-8 tracking-wide">By Anonymous</p>
+                    <p class="text-lg md:text-xl lg:text-2xl font-bold text-gray-900 max-w-xl leading-tight">An open-source investigation into AI workflows, vibe coding, and community growth. <span class="bg-black text-black select-none px-1 rounded-sm">REDACTED</span> is taking over.</p>
+                    <div class="mt-12 animate-bounce flex items-center gap-2 text-xs font-bold tracking-widest text-gray-400">
+                        <span class="md:hidden">SCROLL TO BEGIN</span>
+                        <span class="hidden md:block">CLICK NEXT TO BEGIN</span>
+                    </div>
+                </div>`;
+            } 
+            else if (slide.type === 'about') {
+                html = `
+                <div class="min-h-screen w-full flex flex-col justify-start items-start px-6 md:px-24 max-w-7xl mx-auto pt-32 pb-24 md:pt-48 slide-container">
+                    <h2 class="text-4xl md:text-6xl font-black mb-8 md:mb-12 tracking-tighter text-black">${PORTFOLIO_DATA.about.title}</h2>
+                    <div class="flex flex-col md:flex-row gap-8 md:gap-12 items-start w-full">
+                        <div class="md:w-2/3">
+                            <p class="text-xl md:text-2xl lg:text-4xl font-bold leading-tight md:indent-12 text-black">${PORTFOLIO_DATA.about.text}</p>
+                        </div>
+                        <div class="w-full md:w-1/3 flex flex-col gap-8">
+                            <div class="border-t-4 border-black pt-6">
+                                <p class="font-bold text-sm tracking-widest mb-4 text-black">MISSION OBJECTIVES</p>
+                                <ul class="space-y-2 text-lg font-bold text-gray-500">
+                                    <li>Building Workflow</li>
+                                    <li>Vibe Coding a Website</li>
+                                    <li>Vibe Coding an App</li>
+                                    <li>Building a Community</li>
+                                    <li>Building Archetypes</li>
+                                </ul>
+                            </div>
+                            <div class="border-t-4 border-black pt-6">
+                                <p class="font-bold text-sm tracking-widest mb-4 text-black">ACTIVE PROTOCOLS</p>
+                                <ul class="space-y-2 text-lg font-bold text-gray-500">
+                                    <li onclick="jumpToBrand('PROTOCOL 01:')" class="hover:text-black transition-colors duration-200 cursor-pointer flex items-center group">Protocol 01: This Website <i data-lucide="arrow-right" class="ml-2 w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity"></i></li>
+                                    <li onclick="jumpToBrand('PROTOCOL 02')" class="hover:text-black transition-colors duration-200 cursor-pointer flex items-center group">Protocol 02: The Countdown <i data-lucide="arrow-right" class="ml-2 w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity"></i></li>
+                                    <li onclick="jumpToBrand('PROTOCOL 03')" class="hover:text-black transition-colors duration-200 cursor-pointer flex items-center group">Protocol 03: <span class="bg-black text-black select-none px-1 rounded-sm text-xs align-middle ml-1">[Redacted]</span> <i data-lucide="arrow-right" class="ml-2 w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity"></i></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            }
+            else if (slide.type === 'brand') {
+                const brand = slide.data;
+                const colClass = (brand.assets && brand.assets.length === 2) ? "md:grid-cols-2 max-w-4xl mx-auto" : "md:grid-cols-3";
+                
+                let contentHtml = '';
+
+                if (brand.terminalContent) {
+                    contentHtml = `
+                    <div class="w-full bg-black border-2 border-green-500 rounded-lg p-6 md:p-8 font-mono text-green-500 shadow-xl relative overflow-hidden mb-8 min-h-[400px]">
+                        <div class="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-10 pointer-events-none bg-[length:100%_4px,3px_100%]"></div>
+                        <div class="relative z-20 whitespace-pre-wrap leading-relaxed text-sm md:text-base lg:text-lg">
+${brand.terminalContent.replace('Objective:', '<span class="text-white font-bold">Objective:</span>')
+                       .replace('Execution:', '<span class="text-white font-bold">Execution:</span>')
+                       .replace('The Result:', '<span class="text-white font-bold">The Result:</span>')
+}
+                        </div>
+                    </div>`;
+                } 
+                else if (brand.lockedArchiveContent) {
+                    contentHtml = `
+                    <div class="w-full max-w-4xl mx-auto flex flex-col items-center mb-8">
+                        <a href="${brand.lockedArchiveContent.channelUrl}" target="_blank" class="w-full aspect-video block relative group rounded-xl overflow-hidden shadow-2xl border-2 border-black">
+                            <img src="${brand.lockedArchiveContent.imageUrl}" alt="Locked Archive" class="w-full h-full object-cover group-hover:opacity-80 transition-opacity">
+                            <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                <div class="bg-black/80 text-white px-4 py-2 text-sm font-mono tracking-widest border border-white/20">ACCESS DENIED</div>
+                            </div>
+                        </a>
+                        <p class="text-center max-w-xl mt-8 text-base md:text-lg font-medium leading-relaxed text-gray-700">
+                            ${brand.lockedArchiveContent.text}
+                        </p>
+                    </div>`;
+                }
+                else if (brand.futureRoadmapContent) {
+                    contentHtml = `
+                    <div class="w-full max-w-4xl mx-auto flex flex-col items-center mb-8">
+                         <div class="w-full aspect-[21/9] md:aspect-[3/1] border-2 border-dashed border-gray-400 bg-gray-50 relative flex items-center justify-center rounded-lg" 
+                              style="background-image: repeating-linear-gradient(45deg, #e5e7eb 25%, transparent 25%, transparent 50%, #e5e7eb 50%, #e5e7eb 75%, transparent 75%, transparent); background-size: 20px 20px;">
+                            <div class="bg-white/90 px-6 py-3 border border-gray-300 shadow-sm">
+                                <p class="font-mono font-bold text-gray-500 tracking-widest text-center">ACCESS DENIED<br>// DATA FRAGMENTED</p>
+                            </div>
+                         </div>
+                         <p class="text-center max-w-2xl mt-8 text-base md:text-lg font-medium leading-relaxed text-gray-700">
+                            ${brand.futureRoadmapContent.text}
+                         </p>
+                    </div>
+                    `;
+                }
+                else {
+                    let assetsHtml = brand.assets.map((asset, i) => {
+                        let mediaContent = '';
+                        if (asset.type === 'image_link') {
+                            mediaContent = `<a href="${asset.url}" target="_blank" class="block w-full h-full relative group"><img src="${asset.thumbnail}" class="w-full h-full object-cover"/><div class="absolute bottom-4 left-4 bg-black/80 text-white text-[10px] font-bold px-2 py-1 tracking-widest z-20">VIEW</div></a>`;
+                        } else if (asset.type === 'instagram') {
+                            mediaContent = `
+                            <div class="w-full h-full absolute inset-0 overflow-hidden bg-white">
+                                <div class="w-full h-full" style="transform: scale(1.0); transform-origin: center center;">
+                                    <iframe 
+                                        src="${asset.url}/captioned" 
+                                        class="w-full h-full object-cover" 
+                                        frameborder="0" 
+                                        scrolling="no" 
+                                        allow="autoplay; encrypted-media; picture-in-picture; clipboard-write" 
+                                        allowtransparency="true"
+                                        playsinline
+                                    ></iframe>
+                                </div>
+                            </div>`;
+                        } else if (asset.type === 'youtube') {
+                            mediaContent = `<div class="w-full h-full absolute inset-0 bg-black"><iframe src="${asset.url}?rel=0&playsinline=1" class="w-full h-full object-cover" frameborder="0" allowfullscreen></iframe></div>`;
+                        }
+
+                        return `
+                        <div class="flex flex-col gap-4 md:gap-6">
+                            <div class="aspect-[9/16] bg-black rounded-lg relative overflow-hidden shadow-xl w-full">
+                                ${mediaContent}
+                            </div>
+                            <div class="flex flex-col border-t-2 border-black pt-4">
+                                ${asset.linkUrl ? `<a href="${asset.linkUrl}" target="_blank" class="text-sm font-bold tracking-widest text-gray-400 uppercase mb-1 hover:text-black transition-colors">${asset.title}</a>` : `<span class="text-sm font-bold tracking-widest text-gray-400 uppercase mb-1">${asset.title}</span>`}
+                                <div class="flex items-baseline gap-2">
+                                    <span class="text-2xl md:text-4xl font-black text-black">${asset.views}</span>
+                                    ${asset.views !== "Design" ? `<span class="text-xs md:text-sm font-bold text-gray-500">${asset.metricLabel || "VIEWS"}</span>` : ''}
+                                </div>
+                            </div>
+                        </div>`;
+                    }).join('');
+                    contentHtml = `<div class="grid grid-cols-1 ${colClass} gap-8 md:gap-12 mb-8">${assetsHtml}</div>`;
+                }
+
+                let metricsHtml = '';
+                if (brand.metrics) {
+                    metricsHtml = `<div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-4 border-t-2 border-gray-200 pt-6">
+                        ${brand.metrics.map(m => `<div class="text-left"><p class="text-xs md:text-sm font-bold text-gray-400 tracking-widest mb-1 uppercase">${m.label}</p><p class="text-lg md:text-xl lg:text-3xl font-black text-black">${m.value}</p></div>`).join('')}
+                    </div>`;
+                }
+
+                html = `
+                <div class="w-full flex flex-col pt-12 md:pt-20 px-6 md:px-24 max-w-7xl mx-auto pb-8 md:pb-32 slide-container">
+                    <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 border-b-2 border-gray-100 pb-8">
+                        <div>
+                            <h2 class="text-4xl md:text-5xl lg:text-8xl font-black tracking-tighter mb-2 text-black break-words">${brand.name}</h2>
+                            <p class="text-lg md:text-xl font-bold text-gray-400">${brand.description}</p>
+                        </div>
+                        <div class="hidden md:block text-right">
+                            <p class="text-xs font-bold tracking-widest text-gray-400">PROJECT TYPE</p>
+                            <p class="text-lg font-bold text-black">${brand.projectType || 'Social Media Campaign'}</p>
+                        </div>
+                    </div>
+                    ${brand.context ? `<div class="mb-8 max-w-3xl"><p class="text-base md:text-lg lg:text-xl font-medium text-gray-600 leading-relaxed border-l-4 border-black pl-4">${brand.context}</p></div>` : ''}
+                    ${contentHtml}
+                    ${metricsHtml}
+                </div>`;
+            } 
+            else if (slide.type === 'contact') {
+                html = `
+                <div class="w-full max-w-[700px] mx-auto pt-[120px] pb-32 px-6 slide-container">
+                    <iframe data-tally-src="https://tally.so/embed/RGoe69?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1" loading="lazy" width="100%" height="697" frameborder="0" marginheight="0" marginwidth="0" title="Join the waitlist"></iframe>
+                </div>`;
+            }
+
+            container.innerHTML = html;
+            
+            // Check for Tally embed and load if necessary
+            if (slide.type === 'contact') {
+                loadTallyEmbeds();
+            }
+
+            updateNav();
+            updateHeaderCountdown();
+            lucide.createIcons(); // Refresh icons
+            window.scrollTo(0,0);
+        }
+
+        function loadTallyEmbeds() {
+            var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=typeof Tally?Tally.loadEmbeds():d.querySelectorAll("iframe[data-tally-src]:not([src])").forEach((function(e){e.src=e.dataset.tallySrc}))};
+            if("undefined"!=typeof Tally)v();
+            else if(d.querySelector('script[src="'+w+'"]')==null){var s=d.createElement("script");s.src=w,s.onload=v,s.onerror=v,d.body.appendChild(s);}
+        }
+
+        function updateNav() {
+            document.getElementById('slide-counter').innerText = String(currentSlide + 1).padStart(2, '0') + ' / ' + String(totalSlides).padStart(2, '0');
+            
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+
+            if (currentSlide === 0) {
+                prevBtn.classList.add('opacity-0');
+                prevBtn.disabled = true;
+            } else {
+                prevBtn.classList.remove('opacity-0');
+                prevBtn.disabled = false;
+            }
+
+            if (currentSlide === totalSlides - 1) {
+                nextBtn.classList.add('opacity-0');
+                nextBtn.disabled = true;
+            } else {
+                nextBtn.classList.remove('opacity-0');
+                nextBtn.disabled = false;
+            }
+        }
+
+        function changeSlide(direction) {
+            const newSlide = currentSlide + direction;
+            if (newSlide >= 0 && newSlide < totalSlides) {
+                currentSlide = newSlide;
+                renderSlide(currentSlide);
+            }
+        }
+        
+        function goToStart() {
+            currentSlide = 0;
+            renderSlide(0);
+        }
+
+        // --- MENU LOGIC ---
+        function toggleMenu(show) {
+            const menu = document.getElementById('menu-overlay');
+            if (show) {
+                menu.classList.remove('menu-hidden');
+                menu.classList.add('menu-visible');
+            } else {
+                menu.classList.remove('menu-visible');
+                menu.classList.add('menu-hidden');
+            }
+        }
+
+        function jumpToSlideName(name) {
+            let targetIndex = 0;
+            if (name === 'about') targetIndex = 1;
+            if (name === 'contact') targetIndex = SLIDES.length - 1;
+            
+            currentSlide = targetIndex;
+            toggleMenu(false);
+            renderSlide(currentSlide);
+        }
+
+        function jumpToBrand(brandName) {
+            // Find the index in the slides array where type is 'brand' or 'garyvee' and name matches
+            const index = SLIDES.findIndex(s => (s.type === 'brand' || s.type === 'garyvee') && s.data.name === brandName);
+            if (index !== -1) {
+                currentSlide = index;
+                toggleMenu(false);
+                renderSlide(currentSlide);
+            }
+        }
+
+        // Keyboard support
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') changeSlide(1);
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'Escape') toggleMenu(false);
+        });
+
+        // Initialize
+        renderSlide(0);
+    </script>
+</body>
+</html>
